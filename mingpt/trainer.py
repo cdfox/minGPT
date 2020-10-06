@@ -78,7 +78,7 @@ class Trainer:
             loader = DataLoader(data, shuffle=True, pin_memory=True,
                                 batch_size=config.batch_size,
                                 num_workers=config.num_workers,
-                                collate_fn=partial(collate, self.model.pad_id))
+                                collate_fn=partial(collate, raw_model.pad_id))
 
             losses = []
             pbar = tqdm(enumerate(loader), total=len(loader)) if is_train else enumerate(loader)
