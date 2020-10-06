@@ -105,7 +105,9 @@ class GPT(nn.Module):
         super().__init__()
 
         # input embedding stem
-        self.tok_emb = nn.Embedding(config.vocab_size, config.n_embd)
+        self.pad_id = config.vocab_size
+        self.tok_emb = nn.Embedding(config.vocab_size + 1, config.n_embd, 
+                                    padding_idx=self.pad_id)
         self.pos_emb = nn.Parameter(torch.zeros(1, config.block_size, config.n_embd))
         self.drop = nn.Dropout(config.embd_pdrop)
         # transformer
@@ -192,6 +194,7 @@ class GPT(nn.Module):
         # if we are given some desired targets also calculate the loss
         loss = None
         if targets is not None:
-            loss = F.cross_entropy(logits.view(-1, logits.size(-1)), targets.view(-1))
+            loss = F.cross_entropy(logits.view(-1, logits.size(-1)), targets.view(-1), 
+                                   ignore_index=self.pad_id)
 
         return logits, loss

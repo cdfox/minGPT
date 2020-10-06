@@ -3,6 +3,7 @@ Simple training loop; Boilerplate that could apply to any arbitrary neural netwo
 so nothing in this file really has anything to do with GPT specifically.
 """
 
+from functools import partial
 import math
 import logging
 
@@ -11,6 +12,7 @@ import numpy as np
 
 import torch
 import torch.optim as optim
+from torch.nn.utils.rnn import pad_sequence
 from torch.optim.lr_scheduler import LambdaLR
 from torch.utils.data.dataloader import DataLoader
 
@@ -35,6 +37,13 @@ class TrainerConfig:
     def __init__(self, **kwargs):
         for k,v in kwargs.items():
             setattr(self, k, v)
+
+def collate(pad_id, batch):
+    xs = [x for x, _ in batch]
+    ys = [y for _, y in batch]
+    pad_x = pad_sequence(xs, batch_first=True, padding_value=pad_id)
+    pad_y = pad_sequence(xs, batch_first=True, padding_value=pad_id)
+    return pad_x, pad_y
 
 class Trainer:
 
@@ -65,9 +74,11 @@ class Trainer:
             is_train = split == 'train'
             model.train(is_train)
             data = self.train_dataset if is_train else self.test_dataset
+
             loader = DataLoader(data, shuffle=True, pin_memory=True,
                                 batch_size=config.batch_size,
-                                num_workers=config.num_workers)
+                                num_workers=config.num_workers,
+                                collate_fn=partial(collate, self.model.pad_id))
 
             losses = []
             pbar = tqdm(enumerate(loader), total=len(loader)) if is_train else enumerate(loader)
