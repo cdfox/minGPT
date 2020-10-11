@@ -42,7 +42,7 @@ def collate(pad_id, batch):
     xs = [x for x, _ in batch]
     ys = [y for _, y in batch]
     pad_x = pad_sequence(xs, batch_first=True, padding_value=pad_id)
-    pad_y = pad_sequence(xs, batch_first=True, padding_value=pad_id)
+    pad_y = pad_sequence(ys, batch_first=True, padding_value=pad_id)
     return pad_x, pad_y
 
 class Trainer:
